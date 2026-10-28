@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: salespilot-db
+    environment:
+      POSTGRES_DB: salespilot
+      POSTGRES_USER: salespilot
+      POSTGRES_PASSWORD: salespilot
+    ports:
+      - "5433:5432"
+    volumes:
+      - salespilot-data:/var/lib/postgresql/data
+
+volumes:
+  salespilot-data:
