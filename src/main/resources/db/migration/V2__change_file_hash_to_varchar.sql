@@ -1,0 +1,1 @@
+ALTER TABLE import_batch ALTER COLUMN file_hash TYPE VARCHAR(64);
