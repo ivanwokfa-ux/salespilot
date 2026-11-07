@@ -1,5 +1,9 @@
 package com.salespilot.salespilot.imports;
 
+import com.salespilot.salespilot.common.web.PageResponse;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +16,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+
+
 
 @RestController
 @RequestMapping("/api/v1/imports")
@@ -36,5 +42,10 @@ public class ImportController {
                 .buildAndExpand(created.id())
                 .toUri();
         return ResponseEntity.created(location).body(created);
+    }
+    @GetMapping
+    public PageResponse<ImportBatchResponse> list(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return importService.list(pageable);
     }
 }

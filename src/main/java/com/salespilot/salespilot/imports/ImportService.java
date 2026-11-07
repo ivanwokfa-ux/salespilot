@@ -10,6 +10,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Pageable;
+import com.salespilot.salespilot.common.web.PageResponse;
 
 @Service
 public class ImportService {
@@ -27,7 +29,7 @@ public class ImportService {
                 .orElseThrow(() -> new ImportNotFoundException(id));
     }
     @Transactional
-    public ImportBatchResponse create(MultipartFile file) { 
+    public ImportBatchResponse create(MultipartFile file) {
         if (file.isEmpty()) {
             throw new InvalidImportFileException("Le fichier est vide");
         }
@@ -62,5 +64,11 @@ public class ImportService {
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("SHA-256 indisponible", e);
         }
+    }
+    @Transactional(readOnly = true)
+    public PageResponse<ImportBatchResponse> list(Pageable pageable) {
+        return PageResponse.from(
+                importBatchRepository.findAll(pageable).map(ImportBatchResponse::from)
+        );
     }
 }
