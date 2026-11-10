@@ -1,9 +1,11 @@
 package com.salespilot.salespilot.common.error;
 
+import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -24,6 +26,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadRequestException.class)
     public ProblemDetail handleBadRequest(BadRequestException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problem.setTitle("Requete invalide");
+        return problem;
+    }
+    @ExceptionHandler(PropertyReferenceException.class)
+    public ProblemDetail handleInvalidSort(PropertyReferenceException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                "Tri impossible : le champ '" + ex.getPropertyName() + "' n'existe pas");
         problem.setTitle("Requete invalide");
         return problem;
     }
