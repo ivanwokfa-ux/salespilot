@@ -30,4 +30,11 @@ public class AnalyticsController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
         return analyticsService.monthly(from, to);
     }
+    @GetMapping("/top-products")
+    public TopProductsResponse topProducts(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(defaultValue = "10") int limit) {
+        return analyticsService.topProducts(from, to, limit);
+    }
 }

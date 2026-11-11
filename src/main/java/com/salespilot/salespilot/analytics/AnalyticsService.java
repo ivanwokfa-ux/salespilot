@@ -4,6 +4,7 @@ import com.salespilot.salespilot.common.error.BadRequestException;
 import com.salespilot.salespilot.sales.CurrencyOverviewRow;
 import com.salespilot.salespilot.sales.SaleRepository;
 import com.salespilot.salespilot.sales.MonthlyRow;
+import com.salespilot.salespilot.sales.TopProductRow;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,5 +71,19 @@ public class AnalyticsService {
             series.add(new CurrencyMonthly(entry.getKey(), points));
         }
         return new MonthlyResponse(from, to, series);
+    }
+    @Transactional(readOnly = true)
+    public TopProductsResponse topProducts(LocalDate from, LocalDate to, int limit) {
+        if (from.isAfter(to)) {
+            throw new BadRequestException("La date de debut doit preceder la date de fin");
+        }
+        if (limit < 1 || limit > 100) {
+            throw new BadRequestException("Le nombre de produits doit etre compris entre 1 et 100");
+        }
+        List<TopProduct> products = saleRepository.topProducts(from, to, limit).stream()
+                .map(r -> new TopProduct(r.getCurrency(), r.getRank(), r.getProductSku(), r.getProductName(),
+                        r.getUnitsSold(), r.getRevenue(), r.getSharePercent()))
+                .toList();
+        return new TopProductsResponse(from, to, products);
     }
 }
