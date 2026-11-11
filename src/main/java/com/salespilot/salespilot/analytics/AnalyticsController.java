@@ -24,4 +24,10 @@ public class AnalyticsController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
         return analyticsService.overview(from, to);
     }
+    @GetMapping("/monthly")
+    public MonthlyResponse monthly(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        return analyticsService.monthly(from, to);
+    }
 }

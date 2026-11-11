@@ -21,4 +21,16 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
             ORDER BY currency
             """, nativeQuery = true)
     List<CurrencyOverviewRow> overview(@Param("from") LocalDate from, @Param("to") LocalDate to);
+    @Query(value = """
+            SELECT currency                                            AS "currency",
+                   to_char(date_trunc('month', order_date), 'YYYY-MM') AS "month",
+                   SUM(line_total)                                     AS "revenue",
+                   COUNT(DISTINCT CASE WHEN line_total > 0
+                         THEN COALESCE(agency, '') || '|' || order_ref END) AS "invoiceCount"
+            FROM sale
+            WHERE order_date BETWEEN :from AND :to
+            GROUP BY currency, date_trunc('month', order_date)
+            ORDER BY currency, date_trunc('month', order_date)
+            """, nativeQuery = true)
+    List<MonthlyRow> monthly(@Param("from") LocalDate from, @Param("to") LocalDate to);
 }
