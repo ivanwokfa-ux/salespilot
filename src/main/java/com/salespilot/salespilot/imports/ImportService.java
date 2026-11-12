@@ -1,13 +1,7 @@
 package com.salespilot.salespilot.imports;
 
 import com.salespilot.salespilot.common.web.PageResponse;
-import com.salespilot.salespilot.imports.parsing.ColumnMapper;
-import com.salespilot.salespilot.imports.parsing.ColumnMapping;
-import com.salespilot.salespilot.imports.parsing.CsvTableReader;
-import com.salespilot.salespilot.imports.parsing.InvalidValueException;
-import com.salespilot.salespilot.imports.parsing.RawRow;
-import com.salespilot.salespilot.imports.parsing.RawTable;
-import com.salespilot.salespilot.imports.parsing.SaleRowMapper;
+import com.salespilot.salespilot.imports.parsing.*;
 import com.salespilot.salespilot.sales.Sale;
 import com.salespilot.salespilot.sales.SaleRepository;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -15,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import com.salespilot.salespilot.imports.parsing.ExcelTableReader;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -35,11 +30,13 @@ public class ImportService {
     private final CsvTableReader csvTableReader;
     private final ColumnMapper columnMapper;
     private final SaleRowMapper saleRowMapper;
+    private final ExcelTableReader excelTableReader;
 
     public ImportService(ImportBatchRepository importBatchRepository,
                          ImportErrorRepository importErrorRepository,
                          SaleRepository saleRepository,
                          CsvTableReader csvTableReader,
+                         ExcelTableReader excelTableReader,
                          ColumnMapper columnMapper,
                          SaleRowMapper saleRowMapper) {
         this.importBatchRepository = importBatchRepository;
@@ -47,6 +44,7 @@ public class ImportService {
         this.saleRepository = saleRepository;
         this.csvTableReader = csvTableReader;
         this.columnMapper = columnMapper;
+        this.excelTableReader = excelTableReader;
         this.saleRowMapper = saleRowMapper;
     }
 
@@ -86,7 +84,7 @@ public class ImportService {
         }
 
         // 2. Lecture et reconnaissance des colonnes (avant tout enregistrement)
-        RawTable table = csvTableReader.read(content);
+        RawTable table = readTable(content);
         ColumnMapping mapping = columnMapper.map(table.headers());
 
         // 3. Enregistrement de l'import
@@ -142,5 +140,27 @@ public class ImportService {
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("SHA-256 indisponible", e);
         }
+    }
+    private RawTable readTable(byte[] content) {
+        if (startsWith(content, 0x50, 0x4B, 0x03, 0x04)) {       // "PK.." : un .xlsx est une archive ZIP
+            return excelTableReader.read(content);
+        }
+        if (startsWith(content, 0xD0, 0xCF, 0x11, 0xE0)) {       // ancien format Excel 97-2003
+            throw new InvalidImportFileException(
+                    "Format .xls non pris en charge : enregistrez le fichier au format .xlsx ou .csv");
+        }
+        return csvTableReader.read(content);
+    }
+
+    private boolean startsWith(byte[] content, int... signature) {
+        if (content.length < signature.length) {
+            return false;
+        }
+        for (int i = 0; i < signature.length; i++) {
+            if ((content[i] & 0xFF) != signature[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 }
