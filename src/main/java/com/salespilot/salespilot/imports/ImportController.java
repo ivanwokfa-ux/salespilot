@@ -14,11 +14,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springdoc.core.annotations.ParameterObject;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 
 import java.net.URI;
 
 
 
+
+@Tag(name = "Imports", description = "Importer des fichiers de ventes et consulter l'historique")
 @RestController
 @RequestMapping("/api/v1/imports")
 public class ImportController {
@@ -48,12 +54,13 @@ public class ImportController {
     @GetMapping("/{id}/errors")
     public PageResponse<ImportErrorResponse> listErrors(
             @PathVariable Long id,
-            @PageableDefault(size = 50) Pageable pageable) {
+            @ParameterObject   @PageableDefault(size = 50) Pageable pageable) {
         return importService.listErrors(id, pageable);
     }
     @GetMapping
     public PageResponse<ImportBatchResponse> list(
-            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return importService.list(pageable);
     }
+
 }

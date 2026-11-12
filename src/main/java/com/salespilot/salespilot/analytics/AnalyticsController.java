@@ -1,5 +1,6 @@
 package com.salespilot.salespilot.analytics;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,6 +11,7 @@ import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/v1/analytics")
+@Tag(name = "Indicateurs", description = "Chiffre d'affaires, factures, panier moyen, evolution, top produits")
 public class AnalyticsController {
 
     private final AnalyticsService analyticsService;
