@@ -5,6 +5,7 @@
 SalesPilot transforme les exports de ventes bruts d'un commerce ou d'un distributeur (fichiers CSV ou Excel, par exemple issus de Sage Gestion commerciale) en données propres et en indicateurs fiables : chiffre d'affaires, nombre de factures, panier moyen, évolution mensuelle, produits les plus vendus. Il produit aussi un rapport Excel prêt à être envoyé.
 
 Projet backend réalisé en Java / Spring Boot, conçu à partir de documents réels d'une entreprise de distribution au Cameroun (données de démonstration fictives).
+![Documentation de l'API avec Swagger](docs/swagger.png)
 
 ---
 
