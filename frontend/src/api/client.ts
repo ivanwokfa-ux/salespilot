@@ -1,4 +1,5 @@
-import type { ImportBatch, Page } from './types'
+
+import type { ImportBatch, ImportErrorLine, Page } from './types'
 
 export async function fetchImports(): Promise<Page<ImportBatch>> {
   const response = await fetch('/api/v1/imports')
@@ -17,6 +18,13 @@ export async function uploadImport(file: File, currency: string): Promise<Import
     // Notre API renvoie un ProblemDetail : on affiche son message "detail"
     const problem = await response.json().catch(() => null)
     throw new Error(problem?.detail ?? `Erreur ${response.status}`)
+  }
+  return response.json()
+}
+export async function fetchImportErrors(importId: number): Promise<Page<ImportErrorLine>> {
+  const response = await fetch(`/api/v1/imports/${importId}/errors`)
+  if (!response.ok) {
+    throw new Error(`Erreur ${response.status}`)
   }
   return response.json()
 }

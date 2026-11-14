@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { fetchImports } from '../api/client'
 import type { ImportBatch, ImportStatus } from '../api/types'
 import UploadForm from '../components/UploadForm'
+import ImportErrors from '../components/ImportErrors'
+
 
 const STATUS_LABELS: Record<ImportStatus, { label: string; tone: string }> = {
   COMPLETED: { label: 'Terminé', tone: 'good' },
@@ -13,8 +15,11 @@ function ImportPage() {
   const [imports, setImports] = useState<ImportBatch[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
+  const [selected, setSelected] = useState<ImportBatch | null>(null)
 
-    const [refreshKey, setRefreshKey] = useState(0)
+
+
 
     // Se relance a chaque changement de refreshKey, donc apres chaque import
     useEffect(() => {
@@ -52,7 +57,14 @@ function ImportPage() {
               {imports.map((imp) => {
                 const status = STATUS_LABELS[imp.status]
                 return (
-                  <tr key={imp.id}>
+                  <tr
+
+                                      key={imp.id}
+                                      className={`clickable ${selected?.id === imp.id ? 'selected' : ''}`}
+                                      onClick={() => setSelected(imp)}
+                                      tabIndex={0}
+                                      onKeyDown={(e) => { if (e.key === 'Enter') setSelected(imp) }}
+                                    >
                     <td>{imp.fileName}</td>
                     <td>{new Date(imp.createdAt).toLocaleString('fr-FR')}</td>
                     <td className="num">{imp.totalRows}</td>
@@ -67,6 +79,7 @@ function ImportPage() {
           </table>
         )}
       </div>
+            {selected && <ImportErrors importId={selected.id} fileName={selected.fileName} />}
     </section>
   )
 }

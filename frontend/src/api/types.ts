@@ -20,3 +20,8 @@ export interface Page<T> {
   totalElements: number
   totalPages: number
 }
+export interface ImportErrorLine {
+  lineNumber: number
+  rawLine: string | null
+  errorMessage: string
+}
