@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { fetchImports } from '../api/client'
 import type { ImportBatch, ImportStatus } from '../api/types'
+import UploadForm from '../components/UploadForm'
 
 const STATUS_LABELS: Record<ImportStatus, { label: string; tone: string }> = {
   COMPLETED: { label: 'Terminé', tone: 'good' },
@@ -13,17 +14,21 @@ function ImportPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchImports()
-      .then((page) => setImports(page.content))
-      .catch((err: Error) => setError(err.message))
-      .finally(() => setLoading(false))
-  }, [])
+    const [refreshKey, setRefreshKey] = useState(0)
+
+    // Se relance a chaque changement de refreshKey, donc apres chaque import
+    useEffect(() => {
+      fetchImports()
+        .then((page) => setImports(page.content))
+        .catch((err: Error) => setError(err.message))
+        .finally(() => setLoading(false))
+    }, [refreshKey])
 
   return (
     <section>
       <h1>Importer des ventes</h1>
       <p className="page-subtitle">Historique des fichiers importés.</p>
+      <UploadForm onImported={() => setRefreshKey((k) => k + 1)} />
 
       <div className="card">
         {loading && <p>Chargement…</p>}
