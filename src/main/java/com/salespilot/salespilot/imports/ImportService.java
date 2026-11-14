@@ -163,4 +163,12 @@ public class ImportService {
         }
         return true;
     }
+    @Transactional
+    public void delete(Long id) {
+        if (!importBatchRepository.existsById(id)) {
+            throw new ImportNotFoundException(id);
+        }
+        saleRepository.deleteByImportBatchId(id);
+        importBatchRepository.deleteById(id);
+    }
 }

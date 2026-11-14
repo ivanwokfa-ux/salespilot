@@ -25,3 +25,44 @@ export interface ImportErrorLine {
   rawLine: string | null
   errorMessage: string
 }
+export interface CurrencyOverview {
+  currency: string
+  revenue: number
+  invoiceCount: number
+  averageBasket: number | null
+  unitsSold: number
+}
+
+export interface OverviewResponse {
+  from: string
+  to: string
+  totals: CurrencyOverview[]
+}
+
+export interface MonthlyPoint {
+  month: string
+  revenue: number
+  invoiceCount: number
+}
+
+export interface MonthlyResponse {
+  from: string
+  to: string
+  series: { currency: string; months: MonthlyPoint[] }[]
+}
+
+export interface TopProduct {
+  currency: string
+  rank: number
+  productSku: string
+  productName: string
+  unitsSold: number
+  revenue: number
+  sharePercent: number | null
+}
+
+export interface TopProductsResponse {
+  from: string
+  to: string
+  products: TopProduct[]
+}

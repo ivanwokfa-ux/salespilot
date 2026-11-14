@@ -17,6 +17,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springdoc.core.annotations.ParameterObject;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping ;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 
 import java.net.URI;
@@ -61,6 +64,12 @@ public class ImportController {
     public PageResponse<ImportBatchResponse> list(
             @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return importService.list(pageable);
+    }
+    @Operation(summary = "Supprimer un import et toutes ses ventes")
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        importService.delete(id);
     }
 
 }

@@ -1,13 +1,32 @@
+import type {
+  ImportBatch,
+  ImportErrorLine,
+  Page,
+  OverviewResponse,
+  MonthlyResponse,
+  TopProductsResponse,
+} from './types'
 
-import type { ImportBatch, ImportErrorLine, Page } from './types'
-
-export async function fetchImports(): Promise<Page<ImportBatch>> {
-  const response = await fetch('/api/v1/imports')
+// Fonction commune : appelle l'API et renvoie le JSON, ou leve une erreur lisible
+async function getJson<T>(url: string): Promise<T> {
+  const response = await fetch(url)
   if (!response.ok) {
-    throw new Error(`Erreur ${response.status}`)
+    const problem = await response.json().catch(() => null)
+    throw new Error(problem?.detail ?? `Erreur ${response.status}`)
   }
   return response.json()
 }
+
+/* ---------- Imports ---------- */
+
+export function fetchImports() {
+  return getJson<Page<ImportBatch>>('/api/v1/imports')
+}
+
+export function fetchImportErrors(importId: number) {
+  return getJson<Page<ImportErrorLine>>(`/api/v1/imports/${importId}/errors`)
+}
+
 export async function uploadImport(file: File, currency: string): Promise<ImportBatch> {
   const body = new FormData()
   body.append('file', file)
@@ -21,10 +40,24 @@ export async function uploadImport(file: File, currency: string): Promise<Import
   }
   return response.json()
 }
-export async function fetchImportErrors(importId: number): Promise<Page<ImportErrorLine>> {
-  const response = await fetch(`/api/v1/imports/${importId}/errors`)
+
+/* ---------- Indicateurs ---------- */
+
+export function fetchOverview(from: string, to: string) {
+  return getJson<OverviewResponse>(`/api/v1/analytics/overview?${new URLSearchParams({ from, to })}`)
+}
+
+export function fetchMonthly(from: string, to: string) {
+  return getJson<MonthlyResponse>(`/api/v1/analytics/monthly?${new URLSearchParams({ from, to })}`)
+}
+
+export function fetchTopProducts(from: string, to: string, limit = 5) {
+  return getJson<TopProductsResponse>(
+    `/api/v1/analytics/top-products?${new URLSearchParams({ from, to, limit: String(limit) })}`)
+}
+export async function deleteImport(importId: number): Promise<void> {
+  const response = await fetch(`/api/v1/imports/${importId}`, { method: 'DELETE' })
   if (!response.ok) {
-    throw new Error(`Erreur ${response.status}`)
+    throw new Error(`Suppression impossible (erreur ${response.status})`)
   }
-  return response.json()
 }

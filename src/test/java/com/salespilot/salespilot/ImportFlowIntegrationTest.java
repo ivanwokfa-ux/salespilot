@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.transaction.annotation.Transactional;
+import com.salespilot.salespilot.imports.ImportNotFoundException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -91,5 +92,15 @@ class ImportFlowIntegrationTest extends AbstractIntegrationTest {
         TopProduct first = analyticsService.topProducts(JANUARY_START, JANUARY_END, 10).products().get(0);
         assertThat(first.productName()).isEqualTo("NEVADA 450 g");
         assertThat(first.sharePercent()).isEqualByComparingTo("95.17");
+    }
+    @Test
+    void supprimeUnImportEtSesVentes() throws IOException {
+        ImportBatchResponse imported = importService.create(file("ventes_demo.csv", demoContent()), "XAF");
+
+        importService.delete(imported.id());
+
+        assertThat(analyticsService.overview(JANUARY_START, JANUARY_END).totals()).isEmpty();
+        assertThatThrownBy(() -> importService.getById(imported.id()))
+                .isInstanceOf(ImportNotFoundException.class);
     }
 }

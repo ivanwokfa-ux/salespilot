@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
-import { fetchImports } from '../api/client'
 import type { ImportBatch, ImportStatus } from '../api/types'
 import UploadForm from '../components/UploadForm'
 import ImportErrors from '../components/ImportErrors'
-
+import { deleteImport, fetchImports } from '../api/client'
 
 const STATUS_LABELS: Record<ImportStatus, { label: string; tone: string }> = {
   COMPLETED: { label: 'Terminé', tone: 'good' },
@@ -18,16 +17,26 @@ function ImportPage() {
   const [refreshKey, setRefreshKey] = useState(0)
   const [selected, setSelected] = useState<ImportBatch | null>(null)
 
+  // Se relance a chaque changement de refreshKey : apres un import ou une suppression
+  useEffect(() => {
+    fetchImports()
+      .then((page) => setImports(page.content))
+      .catch((err: Error) => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [refreshKey])
 
-
-
-    // Se relance a chaque changement de refreshKey, donc apres chaque import
-    useEffect(() => {
-      fetchImports()
-        .then((page) => setImports(page.content))
-        .catch((err: Error) => setError(err.message))
-        .finally(() => setLoading(false))
-    }, [refreshKey])
+  async function handleDelete(imp: ImportBatch) {
+    const confirmed = window.confirm(
+      `Supprimer l'import « ${imp.fileName} » et ses ${imp.importedRows} ventes ? Cette action est définitive.`)
+    if (!confirmed) return
+    try {
+      await deleteImport(imp.id)
+      if (selected?.id === imp.id) setSelected(null)
+      setRefreshKey((k) => k + 1)
+    } catch (err) {
+      window.alert((err as Error).message)
+    }
+  }
 
   return (
     <section>
@@ -51,6 +60,7 @@ function ImportPage() {
                 <th className="num">Rejetées</th>
                 <th className="num">Doublons</th>
                 <th>Statut</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -58,13 +68,12 @@ function ImportPage() {
                 const status = STATUS_LABELS[imp.status]
                 return (
                   <tr
-
-                                      key={imp.id}
-                                      className={`clickable ${selected?.id === imp.id ? 'selected' : ''}`}
-                                      onClick={() => setSelected(imp)}
-                                      tabIndex={0}
-                                      onKeyDown={(e) => { if (e.key === 'Enter') setSelected(imp) }}
-                                    >
+                    key={imp.id}
+                    className={`clickable ${selected?.id === imp.id ? 'selected' : ''}`}
+                    onClick={() => setSelected(imp)}
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === 'Enter') setSelected(imp) }}
+                  >
                     <td>{imp.fileName}</td>
                     <td>{new Date(imp.createdAt).toLocaleString('fr-FR')}</td>
                     <td className="num">{imp.totalRows}</td>
@@ -72,6 +81,15 @@ function ImportPage() {
                     <td className="num">{imp.rejectedRows}</td>
                     <td className="num">{imp.duplicateRows}</td>
                     <td><span className={`pill ${status.tone}`}>{status.label}</span></td>
+                    <td>
+                      <button
+                        type="button"
+                        className="btn-link danger"
+                        onClick={(e) => { e.stopPropagation(); handleDelete(imp) }}
+                      >
+                        Supprimer
+                      </button>
+                    </td>
                   </tr>
                 )
               })}
@@ -79,7 +97,8 @@ function ImportPage() {
           </table>
         )}
       </div>
-            {selected && <ImportErrors importId={selected.id} fileName={selected.fileName} />}
+
+      {selected && <ImportErrors importId={selected.id} fileName={selected.fileName} />}
     </section>
   )
 }
