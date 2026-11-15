@@ -97,3 +97,5 @@ tr.selected, tr.selected:hover { background: #fbeedd; }
 .btn-link.danger:hover { background: var(--bad-soft); }
 .chart { margin-top: 20px; }
 .chart h3 { font-size: 15px; margin: 0 0 12px; }
+.report-desc { color: var(--muted); margin: 0 0 16px; }
+.card .filters { align-items: flex-end; }

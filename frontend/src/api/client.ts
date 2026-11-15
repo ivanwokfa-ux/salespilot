@@ -61,3 +61,11 @@ export async function deleteImport(importId: number): Promise<void> {
     throw new Error(`Suppression impossible (erreur ${response.status})`)
   }
 }
+export async function downloadReport(from: string, to: string): Promise<Blob> {
+  const response = await fetch(`/api/v1/reports/sales?from=${from}&to=${to}`)
+  if (!response.ok) {
+    const problem = await response.json().catch(() => null)
+    throw new Error(problem?.detail ?? `Erreur ${response.status}`)
+  }
+  return response.blob()
+}
