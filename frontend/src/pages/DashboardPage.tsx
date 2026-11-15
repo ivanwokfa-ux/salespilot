@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { fetchMonthly, fetchOverview, fetchTopProducts } from '../api/client'
 import type { MonthlyResponse, OverviewResponse, TopProductsResponse } from '../api/types'
 import StatTile from '../components/StatTile'
+import MonthlyChart from '../components/MonthlyChart'
 import { formatMoney, formatNumber } from '../utils/format'
 
 function DashboardPage() {
@@ -61,6 +62,14 @@ function DashboardPage() {
             <StatTile label="Panier moyen" value={formatMoney(t.averageBasket, t.currency)} />
             <StatTile label="Unités vendues" value={formatNumber(t.unitsSold)} />
           </div>
+           {/* AJOUT : le graphique mensuel de cette devise */}
+                    {monthly?.series
+                      .filter((s) => s.currency === t.currency)
+                      .map((s) => (
+                        <div key={s.currency} className="card">
+                          <MonthlyChart currency={s.currency} months={s.months} />
+                        </div>
+                      ))}
 
           <div className="card">
             <h2 className="card-title">Produits les plus vendus</h2>
@@ -88,9 +97,6 @@ function DashboardPage() {
           </div>
         </div>
       ))}
-
-      {/* Le graphique mensuel viendra a l'etape suivante */}
-      {monthly && null}
     </section>
   )
 }
