@@ -6,9 +6,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.Modifying;
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface SaleRepository extends JpaRepository<Sale, Long> {
+
+public interface SaleRepository extends JpaRepository<Sale, Long>, JpaSpecificationExecutor<Sale> {
     boolean existsByAgencyAndOrderRefAndProductSku(String agency, String orderRef, String productSku);
+
 
     @Query(value = """
             SELECT currency                                   AS "currency",

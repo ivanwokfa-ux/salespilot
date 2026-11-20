@@ -3,16 +3,19 @@ package com.salespilot.salespilot;
 import com.salespilot.salespilot.analytics.AnalyticsService;
 import com.salespilot.salespilot.analytics.CurrencyOverview;
 import com.salespilot.salespilot.analytics.TopProduct;
+import com.salespilot.salespilot.common.error.BadRequestException;
 import com.salespilot.salespilot.imports.DuplicateImportException;
 import com.salespilot.salespilot.imports.ImportBatchResponse;
+import com.salespilot.salespilot.imports.ImportNotFoundException;
 import com.salespilot.salespilot.imports.ImportService;
 import com.salespilot.salespilot.imports.ImportStatus;
+import com.salespilot.salespilot.sales.SaleService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.transaction.annotation.Transactional;
-import com.salespilot.salespilot.imports.ImportNotFoundException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -34,6 +37,9 @@ class ImportFlowIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private AnalyticsService analyticsService;
+
+    @Autowired
+    private SaleService saleService;
 
     private byte[] demoContent() throws IOException {
         return Files.readAllBytes(Path.of("samples/ventes_demo.csv"));
@@ -93,6 +99,7 @@ class ImportFlowIntegrationTest extends AbstractIntegrationTest {
         assertThat(first.productName()).isEqualTo("NEVADA 450 g");
         assertThat(first.sharePercent()).isEqualByComparingTo("95.17");
     }
+
     @Test
     void supprimeUnImportEtSesVentes() throws IOException {
         ImportBatchResponse imported = importService.create(file("ventes_demo.csv", demoContent()), "XAF");
@@ -102,5 +109,31 @@ class ImportFlowIntegrationTest extends AbstractIntegrationTest {
         assertThat(analyticsService.overview(JANUARY_START, JANUARY_END).totals()).isEmpty();
         assertThatThrownBy(() -> importService.getById(imported.id()))
                 .isInstanceOf(ImportNotFoundException.class);
+    }
+
+    @Test
+    void rechercheLesVentesAvecFiltres() throws IOException {
+        ImportBatchResponse imported = importService.create(file("ventes_demo.csv", demoContent()), "XAF");
+        Pageable firstPage = PageRequest.of(0, 20);
+
+        // Filtre par import : on retrouve les 4 ventes importees
+        assertThat(saleService.search(imported.id(), null, null, null, null, firstPage).getTotalElements())
+                .isEqualTo(4);
+
+        // Un import qui n'existe pas : aucune vente, et pas d'erreur
+        assertThat(saleService.search(999_999L, null, null, null, null, firstPage).getTotalElements())
+                .isZero();
+
+        // Une periode sans vente
+        assertThat(saleService.search(null, null, LocalDate.of(2025, 1, 1), LocalDate.of(2025, 12, 31), null, firstPage)
+                .getTotalElements()).isZero();
+
+        // Une recherche qui ne correspond a rien
+        assertThat(saleService.search(null, null, null, null, "zzz-introuvable", firstPage).getTotalElements())
+                .isZero();
+
+        // Dates inversees : refus
+        assertThatThrownBy(() -> saleService.search(null, null, JANUARY_END, JANUARY_START, null, firstPage))
+                .isInstanceOf(BadRequestException.class);
     }
 }
