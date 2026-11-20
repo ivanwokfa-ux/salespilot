@@ -7,3 +7,8 @@ export function formatMoney(value: number | null, currency: string): string {
 export function formatNumber(value: number): string {
   return new Intl.NumberFormat('fr-FR').format(value)
 }
+// "2026-06-27" -> "27/06/2026", sans passer par Date (pas de decalage de fuseau horaire)
+export function formatDate(iso: string): string {
+  const [year, month, day] = iso.split('-')
+  return `${day}/${month}/${year}`
+}

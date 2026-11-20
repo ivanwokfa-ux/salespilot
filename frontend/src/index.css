@@ -99,3 +99,10 @@ tr.selected, tr.selected:hover { background: #fbeedd; }
 .chart h3 { font-size: 15px; margin: 0 0 12px; }
 .report-desc { color: var(--muted); margin: 0 0 16px; }
 .card .filters { align-items: flex-end; }
+.pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; color: var(--muted); font-size: 14px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+tr.credit-note td { color: var(--bad); }
+.sales-filters { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 20px; }
+.sales-filters .field.grow { flex: 1; min-width: 220px; }
+.sales-filters .field.grow input { width: 100%; }
+.filter-actions { display: flex; gap: 8px; align-items: center; }

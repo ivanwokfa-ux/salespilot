@@ -66,3 +66,19 @@ export interface TopProductsResponse {
   to: string
   products: TopProduct[]
 }
+
+export interface SaleRow {
+  id: number
+  importBatchId: number
+  orderRef: string
+  orderDate: string
+  agency: string | null
+  customerCode: string | null
+  customerName: string | null
+  productSku: string
+  productName: string
+  quantity: number
+  unitPrice: number
+  lineTotal: number
+  currency: string
+}

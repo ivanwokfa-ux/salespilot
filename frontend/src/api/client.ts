@@ -69,3 +69,21 @@ export async function downloadReport(from: string, to: string): Promise<Blob> {
   }
   return response.blob()
 }
+export interface SalesQuery {
+  page: number
+  size?: number
+  importId?: number
+  agency?: string
+  from?: string
+  to?: string
+  q?: string
+}
+
+export function fetchSales(query: SalesQuery) {
+  const params = new URLSearchParams()
+  // On n'ajoute a l'URL que les parametres renseignes
+  Object.entries(query).forEach(([key, value]) => {
+    if (value !== undefined && value !== '') params.set(key, String(value))
+  })
+  return getJson<Page<SaleRow>>(`/api/v1/sales?${params}`)
+}
